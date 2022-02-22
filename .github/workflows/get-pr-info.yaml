@@ -9,6 +9,9 @@ env:
 jobs:
   get_pr_info:
     runs-on: ubuntu-latest
+    outputs:
+        commit_status: ${{ steps.get_env_url.outputs.env_status }}
+        env_url: ${{ steps.get_env_url.outputs.env_url }} 
     steps: 
       - uses: actions/checkout@v2
         with:
@@ -140,3 +143,14 @@ jobs:
             environment_url.txt
             pr_comment.txt
             pr_number.txt
+
+  check-links:
+    runs-on: ubuntu-latest
+    name: Check links
+    needs: get_pr_info
+    if: needs.get_pr_info.outputs.commit_status == 'success'
+    steps:
+      - name: Check links with linkcheck
+        uses: filiph/linkcheck@2.0.19
+        with:
+          arguments: ${{ needs.get_pr_info.outputs.env_url }}
